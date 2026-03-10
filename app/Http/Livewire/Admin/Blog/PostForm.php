@@ -4,7 +4,6 @@ namespace App\Http\Livewire\Admin\Blog;
 
 use App\Models\Category;
 use App\Models\Post;
-use App\Models\User;
 use App\Services\Blog\MediaService;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -119,6 +118,10 @@ class PostForm extends Component
 
     public function save(MediaService $mediaService)
     {
+        if (!auth()->check()) {
+            abort(403);
+        }
+
         $data = $this->validate();
 
         if ($data['status'] === 'published' && empty($data['published_at'])) {
@@ -129,7 +132,7 @@ class PostForm extends Component
             $data['published_at'] = $data['published_at'] ?: null;
         }
 
-        $authorId = auth()->id() ?: User::query()->value('id');
+        $authorId = auth()->id();
 
         $post = Post::updateOrCreate(
             ['id' => $this->postId],

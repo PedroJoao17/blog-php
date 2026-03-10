@@ -12,6 +12,12 @@
         </div>
     </div>
 
+    @if (session()->has('success'))
+        <div class="flash">
+            {{ session('success') }}
+        </div>
+    @endif
+
     <div class="card">
         <label for="search">Buscar</label>
         <input id="search" type="text" wire:model.debounce.400ms="search"
@@ -27,7 +33,7 @@
                     <th>Slug</th>
                     <th>Publicação</th>
                     <th>Autor</th>
-                    <th width="140">Ações</th>
+                    <th width="180">Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -48,6 +54,12 @@
                             <a href="{{ route('admin.blog.posts.edit', $post->id) }}">Editar</a>
                             |
                             <a href="{{ route('blog.show', $post->slug) }}" target="_blank">Ver</a>
+                            |
+                            <button type="button" wire:click="delete({{ $post->id }})"
+                                onclick="confirm('Deseja realmente excluir esta postagem?') || event.stopImmediatePropagation()"
+                                style="background:none; border:none; color:#b91c1c; cursor:pointer; padding:0;">
+                                Excluir
+                            </button>
                         </td>
                     </tr>
                 @empty

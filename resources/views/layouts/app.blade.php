@@ -1,26 +1,18 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title ?? 'Admin Blog' }}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <title>{{ config('app.name', 'Laravel') }}</title>
+
+    <link rel="stylesheet" href="{{ mix('css/app.css') }}">
+    <script src="{{ mix('js/app.js') }}" defer></script>
     @livewireStyles
+
     <style>
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f3f4f6;
-            color: #111827;
-            margin: 0;
-        }
-
-        header {
-            background: #111827;
-            color: white;
-            padding: 18px 0;
-            margin-bottom: 24px;
-        }
-
         .container {
             width: 92%;
             max-width: 1100px;
@@ -155,19 +147,28 @@
             gap: 16px;
             flex-wrap: wrap;
         }
-
-        a {
-            color: #2563eb;
-        }
     </style>
 </head>
 
-<body>
-    <header>
+<body class="font-sans antialiased bg-gray-100 dark:bg-gray-900">
+    <header style="background:#111827; color:white; padding:18px 0; margin-bottom:24px;">
         <div class="container topbar">
             <strong>Admin do Blog</strong>
-            <div>
-                <a href="{{ route('blog.index') }}" style="color:white;">Ver blog público</a>
+
+            <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                <a href="{{ route('admin.blog.posts.index') }}" style="color:white; text-decoration:none;">Posts</a>
+                <a href="{{ route('blog.index') }}" style="color:white; text-decoration:none;">Ver blog público</a>
+
+                @auth
+                    <span style="color:#d1d5db;">{{ auth()->user()->name }}</span>
+
+                    <form method="POST" action="{{ route('logout') }}" style="display:inline;">
+                        @csrf
+                        <button type="submit" style="background:none; border:none; color:white; cursor:pointer;">
+                            Sair
+                        </button>
+                    </form>
+                @endauth
             </div>
         </div>
     </header>

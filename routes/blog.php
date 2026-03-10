@@ -10,7 +10,7 @@ Route::prefix('blog')->name('blog.')->group(function () {
     Route::get('/{slug}', [BlogController::class, 'show'])->name('show');
 });
 
-Route::middleware(['web'])
+Route::middleware(['web', 'auth'])
     ->prefix('admin/blog')
     ->name('admin.blog.')
     ->group(function () {

@@ -93,14 +93,39 @@
             color: #2563eb;
             text-decoration: none;
         }
+
+        .header-nav {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .header-link {
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background 0.2s ease;
+        }
+
+        .header-link:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
     </style>
     @livewireStyles
 </head>
 
 <body>
     <header>
-        <div class="container">
+        <div class="container"
+            style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;">
             <h1><a href="{{ route('blog.index') }}">Blog</a></h1>
+
+            <nav class="header-nav">
+                <a href="{{ route('blog.index') }}" class="header-link">Início</a>
+                <a href="{{ route('admin.blog.posts.index') }}" class="header-link">Posts</a>
+            </nav>
         </div>
     </header>
 

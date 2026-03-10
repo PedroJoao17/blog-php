@@ -41,7 +41,7 @@ class Post extends Model
     {
         return $this->belongsToMany(Tag::class, 'blog_post_tag', 'post_id', 'tag_id');
     }
-
+    
     public function media()
     {
         return $this->morphMany(Media::class, 'attachable');

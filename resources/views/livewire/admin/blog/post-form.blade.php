@@ -79,8 +79,39 @@
             <label for="content">Conteúdo</label>
             <textarea id="content" wire:model.lazy="content" style="min-height: 260px;"></textarea>
             @error('content') <div class="error">{{ $message }}</div> @enderror
+        </div>
 
-            <div class="actions" style="margin-top: 12px;">
+        <div class="card">
+            <label for="featuredImageUpload">Imagem destacada</label>
+            <input id="featuredImageUpload" type="file" wire:model="featuredImageUpload" accept="image/*">
+            @error('featuredImageUpload') <div class="error">{{ $message }}</div> @enderror
+
+            <div wire:loading wire:target="featuredImageUpload" class="text-muted" style="margin-bottom: 12px;">
+                Enviando imagem...
+            </div>
+
+            @if ($featuredImageUpload)
+                <div style="margin-top: 12px;">
+                    <p><strong>Prévia da nova imagem:</strong></p>
+                    <img src="{{ $featuredImageUpload->temporaryUrl() }}" alt="Prévia"
+                        style="max-width: 280px; border-radius: 8px;">
+                </div>
+            @elseif ($currentFeaturedImage)
+                <div style="margin-top: 12px;">
+                    <p><strong>Imagem atual:</strong></p>
+                    <img src="{{ $currentFeaturedImage }}" alt="Imagem destacada"
+                        style="max-width: 280px; border-radius: 8px;">
+                    <div style="margin-top: 10px;">
+                        <button type="button" wire:click="removeFeaturedImage" class="btn btn-secondary">
+                            Remover imagem
+                        </button>
+                    </div>
+                </div>
+            @endif
+        </div>
+
+        <div class="card">
+            <div class="actions">
                 <button type="submit" class="btn btn-success">Salvar postagem</button>
             </div>
         </div>

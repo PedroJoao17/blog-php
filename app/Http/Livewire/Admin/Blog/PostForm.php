@@ -10,6 +10,7 @@ use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Models\Tag;
+use App\Models\Media;
 
 class PostForm extends Component
 {
@@ -31,11 +32,14 @@ class PostForm extends Component
 
     public $tag_ids = [];
 
+    public $draft_token = '';
+
     public function mount($post = null)
     {
         if ($post) {
             $post = Post::findOrFail($post);
 
+            $this->draft_token = (string) \Illuminate\Support\Str::uuid();
             $this->postId = $post->id;
             $this->title = $post->title;
             $this->slug = $post->slug;
@@ -158,6 +162,18 @@ class PostForm extends Component
         );
 
         $post->tags()->sync($data['tag_ids'] ?? []);
+
+        Media::query()
+            ->where('collection', 'content')
+            ->where('attachable_type', Post::class)
+            ->where('attachable_id', 0)
+            ->where('draft_token', $this->draft_token)
+            ->where('uploaded_by', $authorId)
+            ->update([
+                'attachable_id' => $post->id,
+                'draft_token' => null,
+                'updated_at' => now(),
+            ]);
 
         if ($this->featuredImageUpload) {
             $mediaService->storeFeaturedImage($post, $this->featuredImageUpload, $authorId);

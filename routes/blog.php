@@ -8,6 +8,7 @@ use App\Http\Livewire\Admin\Blog\PostIndex;
 use App\Http\Livewire\Admin\Blog\TagForm;
 use App\Http\Livewire\Admin\Blog\TagIndex;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\BlogImageUploadController;
 
 Route::prefix('blog')->name('blog.')->group(function () {
     Route::get('/', [BlogController::class, 'index'])->name('index');
@@ -29,4 +30,6 @@ Route::middleware(['web', 'auth'])
         Route::get('/tags', TagIndex::class)->name('tags.index');
         Route::get('/tags/create', TagForm::class)->name('tags.create');
         Route::get('/tags/{tag}/edit', TagForm::class)->name('tags.edit');
+        Route::post('/images/upload', [BlogImageUploadController::class, 'store'])
+            ->name('images.upload');
     });

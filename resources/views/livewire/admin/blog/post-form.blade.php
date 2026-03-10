@@ -139,6 +139,13 @@
 
 @push('scripts')
     <script>
+        window.blogEditorUploadConfig = {
+            uploadUrl: @js(route('admin.blog.images.upload')),
+            draftToken: @js($draft_token),
+            postId: @js($postId),
+            csrfToken: @js(csrf_token())
+        };
+
         function initBlogEditor() {
             const editorElement = document.getElementById('content-editor');
 
@@ -162,10 +169,8 @@
                     editorElement.dataset.ckeditorInitialized = 'true';
                     window.blogEditorInstance = editor;
 
-                    // Seta o conteúdo inicial uma vez.
                     editor.setData(@this.get('content') || '');
 
-                    // Atualiza o Livewire, mas sem regravar o editor a cada resposta.
                     editor.model.document.on('change:data', () => {
                         @this.set('content', editor.getData());
                     });

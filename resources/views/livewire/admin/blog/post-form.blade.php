@@ -72,6 +72,20 @@
                 </div>
             </div>
 
+            <div class="row">
+                <div class="col">
+                    <label for="tag_ids">Tags</label>
+                    <select id="tag_ids" wire:model="tag_ids" multiple style="min-height: 140px;">
+                        @foreach ($tags as $tag)
+                            <option value="{{ $tag->id }}">{{ $tag->name }}</option>
+                        @endforeach
+                    </select>
+                    <small class="text-muted">Segure Ctrl para selecionar várias tags.</small>
+                    @error('tag_ids') <div class="error">{{ $message }}</div> @enderror
+                    @error('tag_ids.*') <div class="error">{{ $message }}</div> @enderror
+                </div>
+            </div>
+
             <label for="excerpt">Resumo</label>
             <textarea id="excerpt" wire:model.lazy="excerpt"></textarea>
             @error('excerpt') <div class="error">{{ $message }}</div> @enderror

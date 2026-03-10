@@ -157,6 +157,9 @@
 
             <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
                 <a href="{{ route('admin.blog.posts.index') }}" style="color:white; text-decoration:none;">Posts</a>
+                <a href="{{ route('admin.blog.categories.index') }}"
+                    style="color:white; text-decoration:none;">Categorias</a>
+                <a href="{{ route('admin.blog.tags.index') }}" style="color:white; text-decoration:none;">Tags</a>
                 <a href="{{ route('blog.index') }}" style="color:white; text-decoration:none;">Ver blog público</a>
 
                 @auth

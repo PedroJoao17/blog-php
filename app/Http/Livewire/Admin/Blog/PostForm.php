@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use App\Models\Tag;
 
 class PostForm extends Component
 {
@@ -25,7 +26,10 @@ class PostForm extends Component
     public $slugTouched = false;
 
     public $featuredImageUpload;
+
     public $currentFeaturedImage = null;
+
+    public $tag_ids = [];
 
     public function mount($post = null)
     {
@@ -44,6 +48,7 @@ class PostForm extends Component
             $this->category_id = $post->category_id ?? '';
             $this->currentFeaturedImage = $post->featured_image;
             $this->slugTouched = true;
+            $this->tag_ids = $post->tags()->pluck('blog_tags.id')->toArray();
         }
     }
 
@@ -81,6 +86,8 @@ class PostForm extends Component
             'published_at' => ['nullable', 'date'],
             'category_id' => ['nullable', 'exists:blog_categories,id'],
             'featuredImageUpload' => ['nullable', 'image', 'max:2048'],
+            'tag_ids' => ['nullable', 'array'],
+            'tag_ids.*' => ['exists:blog_tags,id'],
         ];
 
         if ($this->status === 'published') {
@@ -97,6 +104,8 @@ class PostForm extends Component
         'content.required' => 'Para publicar, o conteúdo é obrigatório.',
         'featuredImageUpload.image' => 'O arquivo da capa precisa ser uma imagem.',
         'featuredImageUpload.max' => 'A imagem destacada deve ter no máximo 2MB.',
+        'tag_ids.array' => 'As tags estão em formato inválido.',
+        'tag_ids.*.exists' => 'Uma das tags selecionadas não existe.',
     ];
 
     public function removeFeaturedImage(MediaService $mediaService)
@@ -148,6 +157,8 @@ class PostForm extends Component
             ]
         );
 
+        $post->tags()->sync($data['tag_ids'] ?? []);
+
         if ($this->featuredImageUpload) {
             $mediaService->storeFeaturedImage($post, $this->featuredImageUpload, $authorId);
             $this->currentFeaturedImage = $post->fresh()->featured_image;
@@ -162,6 +173,7 @@ class PostForm extends Component
     {
         return view('livewire.admin.blog.post-form', [
             'categories' => Category::query()->orderBy('name')->get(),
+            'tags' => Tag::query()->orderBy('name')->get(),
         ]);
     }
 }

@@ -90,8 +90,13 @@
             <textarea id="excerpt" wire:model.lazy="excerpt"></textarea>
             @error('excerpt') <div class="error">{{ $message }}</div> @enderror
 
-            <label for="content">Conteúdo</label>
-            <textarea id="content" wire:model.lazy="content" style="min-height: 260px;"></textarea>
+            <label for="content-editor">Conteúdo</label>
+
+            <div wire:ignore>
+                <textarea id="content-editor"
+                    style="min-height: 260px; width:100%; border:1px solid #d1d5db; border-radius:8px; padding:12px;">{{ $content }}</textarea>
+            </div>
+
             @error('content') <div class="error">{{ $message }}</div> @enderror
         </div>
 
@@ -131,3 +136,47 @@
         </div>
     </form>
 </div>
+
+@push('scripts')
+    <script>
+        function initBlogEditor() {
+            const editorElement = document.getElementById('content-editor');
+
+            if (!editorElement) {
+                console.error('CKEditor: elemento #content-editor não encontrado.');
+                return;
+            }
+
+            if (editorElement.dataset.ckeditorInitialized === 'true') {
+                return;
+            }
+
+            if (!window.BlogCkeditor || !window.BlogCkeditor.ClassicEditor) {
+                setTimeout(initBlogEditor, 300);
+                return;
+            }
+
+            window.BlogCkeditor.ClassicEditor
+                .create(editorElement, window.BlogCkeditor.config)
+                .then(editor => {
+                    editorElement.dataset.ckeditorInitialized = 'true';
+                    window.blogEditorInstance = editor;
+
+                    // Seta o conteúdo inicial uma vez.
+                    editor.setData(@this.get('content') || '');
+
+                    // Atualiza o Livewire, mas sem regravar o editor a cada resposta.
+                    editor.model.document.on('change:data', () => {
+                        @this.set('content', editor.getData());
+                    });
+                })
+                .catch(error => {
+                    console.error('Erro ao iniciar CKEditor 5:', error);
+                });
+        }
+
+        document.addEventListener('livewire:load', function () {
+            initBlogEditor();
+        });
+    </script>
+@endpush

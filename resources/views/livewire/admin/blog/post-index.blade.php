@@ -41,7 +41,9 @@
                     <tr>
                         <td>{{ $post->title }}</td>
                         <td>
-                            @if ($post->status === 'published')
+                            @if ($post->isScheduled())
+                                <span class="badge badge-draft">Agendado</span>
+                            @elseif ($post->isPubliclyVisible())
                                 <span class="badge badge-published">Publicado</span>
                             @else
                                 <span class="badge badge-draft">Rascunho</span>
@@ -52,8 +54,12 @@
                         <td>{{ optional($post->author)->name ?: '-' }}</td>
                         <td>
                             <a href="{{ route('admin.blog.posts.edit', $post->id) }}">Editar</a>
-                            |
-                            <a href="{{ route('blog.show', $post->slug) }}" target="_blank">Ver</a>
+
+                            @if ($post->isPubliclyVisible())
+                                |
+                                <a href="{{ route('blog.show', $post->slug) }}" target="_blank">Ver</a>
+                            @endif
+
                             |
                             <button type="button" wire:click="delete({{ $post->id }})"
                                 onclick="confirm('Deseja realmente excluir esta postagem?') || event.stopImmediatePropagation()"

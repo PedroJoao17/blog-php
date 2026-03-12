@@ -83,6 +83,39 @@
             border-radius: 8px;
         }
 
+        .content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .content table th,
+        .content table td {
+            border: 1px solid #d1d5db;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .content blockquote {
+            border-left: 4px solid #d1d5db;
+            padding-left: 16px;
+            color: #4b5563;
+            margin: 20px 0;
+        }
+
+        .content h2,
+        .content h3,
+        .content h4 {
+            margin-top: 28px;
+            margin-bottom: 12px;
+        }
+
+        .content p,
+        .content ul,
+        .content ol {
+            margin-bottom: 16px;
+        }
+
         .pagination {
             margin-top: 20px;
         }

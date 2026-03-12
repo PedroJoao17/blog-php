@@ -10,7 +10,8 @@ use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Models\Tag;
-use App\Models\Media;
+use Carbon\Carbon;
+use App\Services\Blog\PostService;
 
 class PostForm extends Component
 {
@@ -129,7 +130,7 @@ class PostForm extends Component
         session()->flash('success', 'Imagem destacada removida com sucesso.');
     }
 
-    public function save(MediaService $mediaService)
+    public function save(PostService $postService)
     {
         if (!auth()->check()) {
             abort(403);
@@ -137,48 +138,16 @@ class PostForm extends Component
 
         $data = $this->validate();
 
-        if ($data['status'] === 'published' && empty($data['published_at'])) {
-            $data['published_at'] = now();
-        }
-
-        if ($data['status'] === 'draft') {
-            $data['published_at'] = $data['published_at'] ?: null;
-        }
-
-        $authorId = auth()->id();
-
-        $post = Post::updateOrCreate(
-            ['id' => $this->postId],
-            [
-                'author_id' => $authorId,
-                'category_id' => $data['category_id'] ?: null,
-                'title' => $data['title'],
-                'slug' => $data['slug'],
-                'excerpt' => $data['excerpt'],
-                'content' => $data['content'],
-                'status' => $data['status'],
-                'published_at' => $data['published_at'],
-            ]
+        $post = $postService->saveFromAdminData(
+            data: $data,
+            postId: $this->postId,
+            authorId: auth()->id(),
+            draftToken: $this->draft_token,
+            featuredImageUpload: $this->featuredImageUpload
         );
 
-        $post->tags()->sync($data['tag_ids'] ?? []);
-
-        Media::query()
-            ->where('collection', 'content')
-            ->where('attachable_type', Post::class)
-            ->where('attachable_id', 0)
-            ->where('draft_token', $this->draft_token)
-            ->where('uploaded_by', $authorId)
-            ->update([
-                'attachable_id' => $post->id,
-                'draft_token' => null,
-                'updated_at' => now(),
-            ]);
-
-        if ($this->featuredImageUpload) {
-            $mediaService->storeFeaturedImage($post, $this->featuredImageUpload, $authorId);
-            $this->currentFeaturedImage = $post->fresh()->featured_image;
-        }
+        $this->postId = $post->id;
+        $this->currentFeaturedImage = $post->featured_image;
 
         session()->flash('success', 'Postagem salva com sucesso.');
 
@@ -191,5 +160,23 @@ class PostForm extends Component
             'categories' => Category::query()->orderBy('name')->get(),
             'tags' => Tag::query()->orderBy('name')->get(),
         ]);
+    }
+
+    public function getIsScheduledProperty(): bool
+    {
+        if ($this->status !== 'published' || empty($this->published_at)) {
+            return false;
+        }
+
+        return Carbon::parse($this->published_at)->isFuture();
+    }
+
+    public function getIsPubliclyVisibleProperty(): bool
+    {
+        if ($this->status !== 'published' || empty($this->published_at)) {
+            return false;
+        }
+
+        return Carbon::parse($this->published_at)->lte(now());
     }
 }

@@ -8,11 +8,26 @@
                 <p class="text-muted" style="margin:8px 0 0 0;">
                     Preencha os dados básicos da postagem.
                 </p>
+
+                @if ($status === 'draft')
+                    <p class="text-muted" style="margin:8px 0 0 0;">
+                        Situação atual: <strong>Rascunho</strong>
+                    </p>
+                @elseif ($this->isScheduled)
+                    <p class="text-muted" style="margin:8px 0 0 0;">
+                        Situação atual: <strong>Agendado</strong> para
+                        {{ \Carbon\Carbon::parse($published_at)->format('d/m/Y H:i') }}
+                    </p>
+                @elseif ($this->isPubliclyVisible)
+                    <p class="text-muted" style="margin:8px 0 0 0;">
+                        Situação atual: <strong>Publicado</strong>
+                    </p>
+                @endif
             </div>
 
             <div class="actions">
                 <a href="{{ route('admin.blog.posts.index') }}" class="btn btn-secondary">Voltar</a>
-                @if ($slug)
+                @if ($slug && $this->isPubliclyVisible)
                     <a href="{{ route('blog.show', $slug) }}" target="_blank" class="btn btn-secondary">Ver pública</a>
                 @endif
             </div>

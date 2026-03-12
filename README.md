@@ -602,6 +602,12 @@ DB_USERNAME=root
 DB_PASSWORD=sua_senha
 ```
 
+Gerar a chave da aplicação:
+
+```bash
+php artisan key:generate
+```
+
 Rodar migrations:
 
 ```bash

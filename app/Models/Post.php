@@ -34,7 +34,18 @@ class Post extends Model
 
     public function category()
     {
-        return $this->belongsTo(Category::class, 'category_id');
+        return $this->belongsTo(Category::class);
+    }
+
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class, 'blog_post_category', 'post_id', 'category_id')
+            ->withTimestamps();
+    }
+
+    public function getPrimaryCategoryAttribute()
+    {
+        return $this->categories->first() ?: $this->category;
     }
 
     public function tags()
@@ -67,5 +78,23 @@ class Post extends Model
         return $this->status === 'published'
             && $this->published_at !== null
             && $this->published_at->lte(now());
+    }
+
+    public function getCategoryNamesAttribute(): string
+    {
+        if ($this->relationLoaded('categories')) {
+            return $this->categories->pluck('name')->join(', ');
+        }
+
+        return $this->categories()->pluck('name')->join(', ');
+    }
+
+    public function getTagNamesAttribute(): string
+    {
+        if ($this->relationLoaded('tags')) {
+            return $this->tags->pluck('name')->join(', ');
+        }
+
+        return $this->tags()->pluck('name')->join(', ');
     }
 }

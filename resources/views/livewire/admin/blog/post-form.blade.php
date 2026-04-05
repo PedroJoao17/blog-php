@@ -6,7 +6,7 @@
                     {{ $postId ? 'Editar postagem' : 'Nova postagem' }}
                 </h1>
                 <p class="text-muted" style="margin:8px 0 0 0;">
-                    Preencha os dados básicos da postagem.
+                    Defina o conteúdo, categorias, tags e publicação da postagem.
                 </p>
 
                 @if ($status === 'draft')
@@ -27,6 +27,7 @@
 
             <div class="actions">
                 <a href="{{ route('admin.blog.posts.index') }}" class="btn btn-secondary">Voltar</a>
+
                 @if ($slug && $this->isPubliclyVisible)
                     <a href="{{ route('blog.show', $slug) }}" target="_blank" class="btn btn-secondary">Ver pública</a>
                 @endif
@@ -40,7 +41,7 @@
         </div>
     @endif
 
-    <form wire:submit.prevent="save">
+    <form wire:submit.prevent="saveDraft">
         <div class="card">
             <div class="row">
                 <div class="col">
@@ -50,34 +51,59 @@
                 </div>
 
                 <div class="col">
-                    <label for="slug">Slug</label>
-                    <div style="display:flex; gap:10px;">
-                        <input id="slug" type="text" wire:model.lazy="slug">
-                        <button type="button" wire:click="generateSlug" class="btn btn-secondary">Gerar</button>
-                    </div>
-                    @error('slug') <div class="error">{{ $message }}</div> @enderror
+                    <label for="excerpt">Subtítulo</label>
+                    <input id="excerpt" type="text" wire:model.lazy="excerpt">
+                    @error('excerpt') <div class="error">{{ $message }}</div> @enderror
                 </div>
             </div>
 
             <div class="row">
                 <div class="col">
-                    <label for="category_id">Categoria</label>
-                    <select id="category_id" wire:model="category_id">
-                        <option value="">Selecione</option>
-                        @foreach ($categories as $category)
-                            <option value="{{ $category->id }}">{{ $category->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('category_id') <div class="error">{{ $message }}</div> @enderror
-                </div>
+                    <div
+                        style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px;">
+                        <label style="margin-bottom:0;">Categorias</label>
+                        <button type="button" wire:click="openCategoryModal" class="btn btn-secondary"
+                            style="padding:6px 10px;">+</button>
+                    </div>
 
-                <div class="col">
-                    <label for="status">Status</label>
-                    <select id="status" wire:model="status">
-                        <option value="draft">Rascunho</option>
-                        <option value="published">Publicado</option>
-                    </select>
-                    @error('status') <div class="error">{{ $message }}</div> @enderror
+                    <div x-data="{ open: false }" style="position:relative;">
+                        <button type="button" @click="open = !open"
+                            style="width:100%; text-align:left; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; background:white; cursor:pointer;">
+                            @if ($this->selectedCategories->isNotEmpty())
+                                {{ $this->selectedCategories->pluck('name')->join(', ') }}
+                            @else
+                                Selecione uma ou mais categorias
+                            @endif
+                        </button>
+
+                        <div x-show="open" @click.outside="open = false" x-transition
+                            style="position:absolute; top:calc(100% + 6px); left:0; width:100%; background:white; border:1px solid #d1d5db; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.08); z-index:50; max-height:240px; overflow:auto; padding:10px;">
+                            @forelse ($categories as $category)
+                                <label
+                                    style="display:flex; align-items:center; gap:8px; padding:6px 0; font-weight:normal;">
+                                    <input type="checkbox" wire:model="category_ids" value="{{ $category->id }}"
+                                        style="width:auto; margin:0;">
+                                    <span>{{ $category->name }}</span>
+                                </label>
+                            @empty
+                                <p class="text-muted" style="margin:0;">Nenhuma categoria cadastrada.</p>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    @if ($this->selectedCategories->isNotEmpty())
+                        <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+                            @foreach ($this->selectedCategories as $category)
+                                <span
+                                    style="padding:6px 10px; border-radius:999px; background:#dbeafe; color:#1d4ed8; font-size:13px;">
+                                    {{ $category->name }}
+                                </span>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    @error('category_ids') <div class="error">{{ $message }}</div> @enderror
+                    @error('category_ids.*') <div class="error">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="col">
@@ -89,21 +115,53 @@
 
             <div class="row">
                 <div class="col">
-                    <label for="tag_ids">Tags</label>
-                    <select id="tag_ids" wire:model="tag_ids" multiple style="min-height: 140px;">
-                        @foreach ($tags as $tag)
-                            <option value="{{ $tag->id }}">{{ $tag->name }}</option>
-                        @endforeach
-                    </select>
-                    <small class="text-muted">Segure Ctrl para selecionar várias tags.</small>
+                    <div
+                        style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px;">
+                        <label style="margin-bottom:0;">Tags</label>
+                        <button type="button" wire:click="openTagModal" class="btn btn-secondary"
+                            style="padding:6px 10px;">+</button>
+                    </div>
+
+                    <div x-data="{ open: false }" style="position:relative;">
+                        <button type="button" @click="open = !open"
+                            style="width:100%; text-align:left; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; background:white; cursor:pointer;">
+                            @if ($this->selectedTags->isNotEmpty())
+                                {{ $this->selectedTags->pluck('name')->join(', ') }}
+                            @else
+                                Selecione uma ou mais tags
+                            @endif
+                        </button>
+
+                        <div x-show="open" @click.outside="open = false" x-transition
+                            style="position:absolute; top:calc(100% + 6px); left:0; width:100%; background:white; border:1px solid #d1d5db; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.08); z-index:50; max-height:240px; overflow:auto; padding:10px;">
+                            @forelse ($tags as $tag)
+                                <label
+                                    style="display:flex; align-items:center; gap:8px; padding:6px 0; font-weight:normal;">
+                                    <input type="checkbox" wire:model="tag_ids" value="{{ $tag->id }}"
+                                        style="width:auto; margin:0;">
+                                    <span>{{ $tag->name }}</span>
+                                </label>
+                            @empty
+                                <p class="text-muted" style="margin:0;">Nenhuma tag cadastrada.</p>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    @if ($this->selectedTags->isNotEmpty())
+                        <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+                            @foreach ($this->selectedTags as $tag)
+                                <span
+                                    style="padding:6px 10px; border-radius:999px; background:#e5e7eb; color:#111827; font-size:13px;">
+                                    #{{ $tag->name }}
+                                </span>
+                            @endforeach
+                        </div>
+                    @endif
+
                     @error('tag_ids') <div class="error">{{ $message }}</div> @enderror
                     @error('tag_ids.*') <div class="error">{{ $message }}</div> @enderror
                 </div>
             </div>
-
-            <label for="excerpt">Resumo</label>
-            <textarea id="excerpt" wire:model.lazy="excerpt"></textarea>
-            @error('excerpt') <div class="error">{{ $message }}</div> @enderror
 
             <label for="content-editor">Conteúdo</label>
 
@@ -146,10 +204,49 @@
 
         <div class="card">
             <div class="actions">
-                <button type="submit" class="btn btn-success">Salvar postagem</button>
+                <button type="button" wire:click="saveDraft" class="btn btn-secondary">Salvar rascunho</button>
+                <button type="button" wire:click="publish" class="btn btn-success">
+                    {{ $this->isPubliclyVisible ? 'Atualizar publicação' : 'Publicar' }}
+                </button>
             </div>
         </div>
     </form>
+
+    @if ($showCategoryModal)
+        <div
+            style="position:fixed; inset:0; background:rgba(17,24,39,.55); display:flex; align-items:center; justify-content:center; z-index:9999;">
+            <div class="card" style="width:100%; max-width:500px; margin:0;">
+                <h2 style="margin-top:0;">Nova categoria</h2>
+
+                <label for="newCategoryName">Nome</label>
+                <input id="newCategoryName" type="text" wire:model.defer="newCategoryName">
+                @error('newCategoryName') <div class="error">{{ $message }}</div> @enderror
+
+                <div class="actions" style="margin-top: 12px;">
+                    <button type="button" wire:click="closeCategoryModal" class="btn btn-secondary">Cancelar</button>
+                    <button type="button" wire:click="saveNewCategory" class="btn btn-success">Adicionar</button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if ($showTagModal)
+        <div
+            style="position:fixed; inset:0; background:rgba(17,24,39,.55); display:flex; align-items:center; justify-content:center; z-index:9999;">
+            <div class="card" style="width:100%; max-width:500px; margin:0;">
+                <h2 style="margin-top:0;">Nova tag</h2>
+
+                <label for="newTagName">Nome</label>
+                <input id="newTagName" type="text" wire:model.defer="newTagName">
+                @error('newTagName') <div class="error">{{ $message }}</div> @enderror
+
+                <div class="actions" style="margin-top: 12px;">
+                    <button type="button" wire:click="closeTagModal" class="btn btn-secondary">Cancelar</button>
+                    <button type="button" wire:click="saveNewTag" class="btn btn-success">Adicionar</button>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
 
 @push('scripts')

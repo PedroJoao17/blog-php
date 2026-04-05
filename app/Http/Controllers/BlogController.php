@@ -24,7 +24,7 @@ class BlogController extends Controller
             ->get();
 
         $posts = Post::query()
-            ->with(['author', 'category', 'tags'])
+            ->with(['author', 'categories', 'tags'])
             ->published()
             ->when($q !== '', function ($query) use ($q) {
                 $query->where(function ($subQuery) use ($q) {
@@ -35,7 +35,7 @@ class BlogController extends Controller
                 });
             })
             ->when($category !== '', function ($query) use ($category) {
-                $query->whereHas('category', function ($categoryQuery) use ($category) {
+                $query->whereHas('categories', function ($categoryQuery) use ($category) {
                     $categoryQuery->where('slug', $category);
                 });
             })
@@ -61,17 +61,21 @@ class BlogController extends Controller
     public function show(string $slug)
     {
         $post = Post::query()
-            ->with(['author', 'category', 'tags'])
+            ->with(['author', 'categories', 'tags'])
             ->published()
             ->where('slug', $slug)
             ->firstOrFail();
 
         $relatedPosts = Post::query()
-            ->with(['category', 'tags'])
+            ->with(['categories', 'tags'])
             ->published()
             ->where('id', '!=', $post->id)
-            ->when($post->category_id, function ($query) use ($post) {
-                $query->where('category_id', $post->category_id);
+            ->when($post->categories->isNotEmpty(), function ($query) use ($post) {
+                $categoryIds = $post->categories->pluck('id')->all();
+
+                $query->whereHas('categories', function ($categoryQuery) use ($categoryIds) {
+                    $categoryQuery->whereIn('blog_categories.id', $categoryIds);
+                });
             })
             ->orderByDesc('published_at')
             ->limit(3)

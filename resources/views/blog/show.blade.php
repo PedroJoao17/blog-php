@@ -1,4 +1,9 @@
-@extends('layouts.blog', ['title' => $post->title])
+@extends('layouts.blog', [
+    'title' => $post->seo_title ?? $post->title,
+    'metaDescription' => $post->seo_description ?? ($post->excerpt ?: 'Postagem do blog.'),
+    'canonicalUrl' => $post->canonical_url ?: $post->public_url,
+    'ogImage' => $post->featured_image
+])
 
 @section('content')
     <a href="{{ route('blog.index') }}" class="back-link">← Voltar para o blog</a>
@@ -12,17 +17,27 @@
             @if ($post->author)
                 • por {{ $post->author->name }}
             @endif
-
-            @if ($post->category)
-                • categoria:
-                <a href="{{ route('blog.index', ['category' => $post->category->slug]) }}">
-                    {{ $post->category->name }}
-                </a>
-            @endif
         </div>
 
+        @if ($post->categories->isNotEmpty())
+            <div style="margin: 14px 0 18px 0; display:flex; gap:8px; flex-wrap:wrap;">
+                @foreach ($post->categories as $item)
+                    <a
+                        href="{{ route('blog.index', ['category' => $item->slug]) }}"
+                        style="padding:6px 10px; border-radius:999px; background:#dbeafe; color:#1d4ed8; text-decoration:none; font-size:13px;"
+                    >
+                        {{ $item->name }}
+                    </a>
+                @endforeach
+            </div>
+        @endif
+
         @if ($post->featured_image)
-            <img src="{{ $post->featured_image }}" alt="{{ $post->title }}" class="featured-image">
+            <img
+                src="{{ $post->featured_image }}"
+                alt="{{ $post->title }}"
+                class="featured-image"
+            >
         @endif
 
         @if ($post->excerpt)
@@ -34,8 +49,10 @@
         @if ($post->tags->isNotEmpty())
             <div style="margin: 18px 0 24px 0; display:flex; gap:8px; flex-wrap:wrap;">
                 @foreach ($post->tags as $item)
-                    <a href="{{ route('blog.index', ['tag' => $item->slug]) }}"
-                        style="padding:6px 10px; border-radius:999px; background:#e5e7eb; color:#111827; text-decoration:none; font-size:13px;">
+                    <a
+                        href="{{ route('blog.index', ['tag' => $item->slug]) }}"
+                        style="padding:6px 10px; border-radius:999px; background:#e5e7eb; color:#111827; text-decoration:none; font-size:13px;"
+                    >
                         #{{ $item->name }}
                     </a>
                 @endforeach
@@ -62,10 +79,17 @@
 
                         <div class="meta" style="margin-bottom:8px;">
                             {{ optional($item->published_at)->format('d/m/Y') ?? 'Sem data' }}
-                            @if ($item->category)
-                                • {{ $item->category->name }}
-                            @endif
                         </div>
+
+                        @if ($item->categories->isNotEmpty())
+                            <div style="margin-bottom:8px; display:flex; gap:8px; flex-wrap:wrap;">
+                                @foreach ($item->categories as $category)
+                                    <span style="padding:4px 8px; border-radius:999px; background:#dbeafe; color:#1d4ed8; font-size:12px;">
+                                        {{ $category->name }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        @endif
 
                         @if ($item->excerpt)
                             <p style="margin:0; color:#4b5563;">

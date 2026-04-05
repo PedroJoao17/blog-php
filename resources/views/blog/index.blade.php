@@ -1,10 +1,14 @@
-@extends('layouts.blog', ['title' => 'Blog'])
+@extends('layouts.blog', [
+    'title' => 'Blog',
+    'metaDescription' => 'Explore as postagens publicadas do blog.',
+    'canonicalUrl' => route('blog.index', array_filter(['q' => $q, 'category' => $category, 'tag' => $tag])),
+    'ogImage' => null
+])
 
 @section('content')
     <div class="card">
         <h2 style="margin-top: 0;">Blog</h2>
-        <p style="margin-bottom: 0;">Explore as postagens publicadas, filtre por categoria e tag, ou busque por termos do
-            conteúdo.</p>
+        <p style="margin-bottom: 0;">Explore as postagens publicadas, filtre por categoria e tag, ou busque por termos do conteúdo.</p>
     </div>
 
     <div class="card">
@@ -12,9 +16,14 @@
             <label for="q" style="display:block; font-weight:bold; margin-bottom:8px;">Buscar no blog</label>
 
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <input id="q" name="q" type="text" value="{{ $q }}"
-                    placeholder="Buscar por título, resumo, conteúdo ou slug"
-                    style="flex:1; min-width:260px; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px;">
+                <input
+                    id="q"
+                    name="q"
+                    type="text"
+                    value="{{ $q }}"
+                    placeholder="Buscar por título, subtítulo, conteúdo ou slug"
+                    style="flex:1; min-width:260px; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px;"
+                >
 
                 @if ($category !== '')
                     <input type="hidden" name="category" value="{{ $category }}">
@@ -24,14 +33,18 @@
                     <input type="hidden" name="tag" value="{{ $tag }}">
                 @endif
 
-                <button type="submit"
-                    style="padding:10px 14px; border:none; border-radius:8px; background:#2563eb; color:white; cursor:pointer;">
+                <button
+                    type="submit"
+                    style="padding:10px 14px; border:none; border-radius:8px; background:#2563eb; color:white; cursor:pointer;"
+                >
                     Buscar
                 </button>
 
                 @if ($q !== '' || $category !== '' || $tag !== '')
-                    <a href="{{ route('blog.index') }}"
-                        style="padding:10px 14px; border-radius:8px; background:#e5e7eb; color:#111827; text-decoration:none;">
+                    <a
+                        href="{{ route('blog.index') }}"
+                        style="padding:10px 14px; border-radius:8px; background:#e5e7eb; color:#111827; text-decoration:none;"
+                    >
                         Limpar filtros
                     </a>
                 @endif
@@ -42,14 +55,18 @@
             <strong style="display:block; margin-bottom:8px;">Categorias</strong>
 
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <a href="{{ route('blog.index', array_filter(['q' => $q, 'tag' => $tag])) }}"
-                    style="padding:8px 12px; border-radius:999px; text-decoration:none; background:{{ $category === '' ? '#2563eb' : '#e5e7eb' }}; color:{{ $category === '' ? 'white' : '#111827' }};">
+                <a
+                    href="{{ route('blog.index', array_filter(['q' => $q, 'tag' => $tag])) }}"
+                    style="padding:8px 12px; border-radius:999px; text-decoration:none; background:{{ $category === '' ? '#2563eb' : '#e5e7eb' }}; color:{{ $category === '' ? 'white' : '#111827' }};"
+                >
                     Todas
                 </a>
 
                 @foreach ($categories as $item)
-                    <a href="{{ route('blog.index', array_filter(['q' => $q, 'category' => $item->slug, 'tag' => $tag])) }}"
-                        style="padding:8px 12px; border-radius:999px; text-decoration:none; background:{{ $category === $item->slug ? '#2563eb' : '#e5e7eb' }}; color:{{ $category === $item->slug ? 'white' : '#111827' }};">
+                    <a
+                        href="{{ route('blog.index', array_filter(['q' => $q, 'category' => $item->slug, 'tag' => $tag])) }}"
+                        style="padding:8px 12px; border-radius:999px; text-decoration:none; background:{{ $category === $item->slug ? '#2563eb' : '#e5e7eb' }}; color:{{ $category === $item->slug ? 'white' : '#111827' }};"
+                    >
                         {{ $item->name }}
                     </a>
                 @endforeach
@@ -60,14 +77,18 @@
             <strong style="display:block; margin-bottom:8px;">Tags</strong>
 
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <a href="{{ route('blog.index', array_filter(['q' => $q, 'category' => $category])) }}"
-                    style="padding:8px 12px; border-radius:999px; text-decoration:none; background:{{ $tag === '' ? '#2563eb' : '#e5e7eb' }}; color:{{ $tag === '' ? 'white' : '#111827' }};">
+                <a
+                    href="{{ route('blog.index', array_filter(['q' => $q, 'category' => $category])) }}"
+                    style="padding:8px 12px; border-radius:999px; text-decoration:none; background:{{ $tag === '' ? '#2563eb' : '#e5e7eb' }}; color:{{ $tag === '' ? 'white' : '#111827' }};"
+                >
                     Todas
                 </a>
 
                 @foreach ($tags as $item)
-                    <a href="{{ route('blog.index', array_filter(['q' => $q, 'category' => $category, 'tag' => $item->slug])) }}"
-                        style="padding:8px 12px; border-radius:999px; text-decoration:none; background:{{ $tag === $item->slug ? '#2563eb' : '#e5e7eb' }}; color:{{ $tag === $item->slug ? 'white' : '#111827' }};">
+                    <a
+                        href="{{ route('blog.index', array_filter(['q' => $q, 'category' => $category, 'tag' => $item->slug])) }}"
+                        style="padding:8px 12px; border-radius:999px; text-decoration:none; background:{{ $tag === $item->slug ? '#2563eb' : '#e5e7eb' }}; color:{{ $tag === $item->slug ? 'white' : '#111827' }};"
+                    >
                         {{ $item->name }}
                     </a>
                 @endforeach
@@ -101,7 +122,11 @@
         <article class="card">
             @if ($post->featured_image)
                 <a href="{{ route('blog.show', $post->slug) }}">
-                    <img src="{{ $post->featured_image }}" alt="{{ $post->title }}" class="featured-image">
+                    <img
+                        src="{{ $post->featured_image }}"
+                        alt="{{ $post->title }}"
+                        class="featured-image"
+                    >
                 </a>
             @endif
 
@@ -117,18 +142,23 @@
                 @if ($post->author)
                     • por {{ $post->author->name }}
                 @endif
-
-                @if ($post->category)
-                    • categoria:
-                    <a
-                        href="{{ route('blog.index', array_filter(['q' => $q, 'category' => $post->category->slug, 'tag' => $tag])) }}">
-                        {{ $post->category->name }}
-                    </a>
-                @endif
             </div>
 
+            @if ($post->categories->isNotEmpty())
+                <div style="margin-top: 10px; display:flex; gap:8px; flex-wrap:wrap;">
+                    @foreach ($post->categories as $item)
+                        <a
+                            href="{{ route('blog.index', array_filter(['q' => $q, 'category' => $item->slug, 'tag' => $tag])) }}"
+                            style="padding:6px 10px; border-radius:999px; background:#dbeafe; color:#1d4ed8; text-decoration:none; font-size:13px;"
+                        >
+                            {{ $item->name }}
+                        </a>
+                    @endforeach
+                </div>
+            @endif
+
             @if ($post->excerpt)
-                <div class="excerpt">
+                <div class="excerpt" style="margin-top: 14px;">
                     {{ $post->excerpt }}
                 </div>
             @endif
@@ -136,8 +166,10 @@
             @if ($post->tags->isNotEmpty())
                 <div style="margin-top: 14px; display:flex; gap:8px; flex-wrap:wrap;">
                     @foreach ($post->tags as $item)
-                        <a href="{{ route('blog.index', array_filter(['q' => $q, 'category' => $category, 'tag' => $item->slug])) }}"
-                            style="padding:6px 10px; border-radius:999px; background:#e5e7eb; color:#111827; text-decoration:none; font-size:13px;">
+                        <a
+                            href="{{ route('blog.index', array_filter(['q' => $q, 'category' => $category, 'tag' => $item->slug])) }}"
+                            style="padding:6px 10px; border-radius:999px; background:#e5e7eb; color:#111827; text-decoration:none; font-size:13px;"
+                        >
                             #{{ $item->name }}
                         </a>
                     @endforeach

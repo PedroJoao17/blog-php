@@ -30,7 +30,8 @@
                 <tr>
                     <th>Título</th>
                     <th>Status</th>
-                    <th>Slug</th>
+                    <th>Categorias</th>
+                    <th>Tags</th>
                     <th>Publicação</th>
                     <th>Autor</th>
                     <th width="180">Ações</th>
@@ -39,7 +40,16 @@
             <tbody>
                 @forelse ($posts as $post)
                     <tr>
-                        <td>{{ $post->title }}</td>
+                        <td>
+                            <div style="font-weight:600;">{{ $post->title }}</div>
+
+                            @if ($post->excerpt)
+                                <div class="text-muted" style="font-size:13px; margin-top:4px;">
+                                    {{ $post->excerpt }}
+                                </div>
+                            @endif
+                        </td>
+
                         <td>
                             @if ($post->isScheduled())
                                 <span class="badge badge-draft">Agendado</span>
@@ -49,9 +59,40 @@
                                 <span class="badge badge-draft">Rascunho</span>
                             @endif
                         </td>
-                        <td>{{ $post->slug }}</td>
+
+                        <td>
+                            @if ($post->categories->isNotEmpty())
+                                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                    @foreach ($post->categories as $category)
+                                        <span
+                                            style="padding:4px 8px; border-radius:999px; background:#dbeafe; color:#1d4ed8; font-size:12px;">
+                                            {{ $category->name }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            @else
+                                <span class="text-muted">-</span>
+                            @endif
+                        </td>
+
+                        <td>
+                            @if ($post->tags->isNotEmpty())
+                                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                    @foreach ($post->tags as $tag)
+                                        <span
+                                            style="padding:4px 8px; border-radius:999px; background:#e5e7eb; color:#111827; font-size:12px;">
+                                            #{{ $tag->name }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            @else
+                                <span class="text-muted">-</span>
+                            @endif
+                        </td>
+
                         <td>{{ optional($post->published_at)->format('d/m/Y H:i') ?: '-' }}</td>
                         <td>{{ optional($post->author)->name ?: '-' }}</td>
+
                         <td>
                             <a href="{{ route('admin.blog.posts.edit', $post->id) }}">Editar</a>
 
@@ -70,7 +111,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6">Nenhuma postagem encontrada.</td>
+                        <td colspan="7">Nenhuma postagem encontrada.</td>
                     </tr>
                 @endforelse
             </tbody>

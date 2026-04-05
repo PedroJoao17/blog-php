@@ -29,16 +29,24 @@ class PostIndex extends Component
 
         session()->flash('success', 'Postagem excluída com sucesso.');
     }
-    
+
     public function render()
     {
         $posts = Post::query()
-            ->with(['author', 'category', 'media'])
+            ->with(['author', 'category', 'categories', 'tags', 'media'])
             ->when($this->search, function ($query) {
-                $query->where(function ($q) {
-                    $q->where('title', 'like', '%' . $this->search . '%')
-                        ->orWhere('slug', 'like', '%' . $this->search . '%')
-                        ->orWhere('status', 'like', '%' . $this->search . '%');
+                $search = '%' . $this->search . '%';
+
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'like', $search)
+                        ->orWhere('slug', 'like', $search)
+                        ->orWhere('status', 'like', $search)
+                        ->orWhereHas('categories', function ($categoryQuery) use ($search) {
+                            $categoryQuery->where('name', 'like', $search);
+                        })
+                        ->orWhereHas('tags', function ($tagQuery) use ($search) {
+                            $tagQuery->where('name', 'like', $search);
+                        });
                 });
             })
             ->orderByDesc('created_at')
